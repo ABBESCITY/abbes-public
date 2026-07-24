@@ -1,0 +1,59 @@
+{
+  "name": "@abbes-public/code-infra",
+  "version": "0.0.0",
+  "description": "The code infra for tool package develop",
+  "type": "module",
+  "bin": {
+    "code-infra": "./bin/index.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./src/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/plugin-transform-runtime": "7.29.7",
+    "@babel/preset-env": "7.29.7",
+    "@babel/preset-react": "7.29.7",
+    "@babel/preset-typescript": "7.29.7",
+    "@eslint/config-helpers": "0.6.0",
+    "@eslint/js": "10.0.1",
+    "@pnpm/find-workspace-dir": "1000.1.5",
+    "@rollup/plugin-babel": "7.1.0",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "babel-plugin-optimize-clsx": "2.6.2",
+    "chalk": "5.6.2",
+    "cli-spinners": "3.4.0",
+    "defu": "6.1.7",
+    "execa": "^9.6.1",
+    "fast-glob": "3.3.3",
+    "globals": "17.6.0",
+    "listr2": "10.2.1",
+    "rollup": "4.61.1",
+    "stylelint": "17.12.0",
+    "typescript-eslint": "8.60.1",
+    "yargs": "18.0.0",
+    "yocto-spinner": "1.2.0"
+  },
+  "files": [
+    "bin",
+    "src",
+    "dist/lib",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/babel__core": "7.20.5",
+    "@types/babel__plugin-transform-runtime": "7.9.5",
+    "@types/babel__preset-env": "7.10.0",
+    "@types/yargs": "17.0.35",
+    "type-fest": "5.7.0"
+  }
+}

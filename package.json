@@ -1,0 +1,18 @@
+{
+  "name": "abbes-public",
+  "version": "0.0.0",
+  "description": "The abbes public config infra",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@abbes-public/code-infra": "workspace:*",
+    "eslint": "^10.4.1"
+  },
+  "packageManager": "pnpm@10.33.4",
+  "devDependencies": {
+    "@types/node": "25.9.2"
+  }
+}

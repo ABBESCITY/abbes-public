@@ -1,0 +1,8 @@
+{
+  "name": "@abbes-public/docs-infra",
+  "version": "0.0.0",
+  "description": "The docs infra is for docs or website develop ",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {},
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/lib",
+    "rootDir": "./src",
+    "noEmit": false,
+    "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "**/*.test.*",
+    "**/setupVitest.ts"
+  ]
+}
