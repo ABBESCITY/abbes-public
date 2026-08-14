@@ -2,8 +2,8 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import cmdBuildHandler from '../command/build';
-import cmdBuildManyHandler from '../command/buildMany';
+import cmdBuildHandler from '../commands/build';
+import cmdBuildManyHandler from '../commands/buildMany';
 
 yargs(hideBin(process.argv))
   .scriptName('code-infra')

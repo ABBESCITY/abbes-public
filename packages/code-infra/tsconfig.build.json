@@ -1,19 +1,16 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "paths": {},
-    "emitDeclarationOnly": true,
-    "outDir": "./dist/lib",
-    "rootDir": "./src",
-    "noEmit": false,
-    "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo"
+    "declaration": true,
+    "declarationMap": true,
+    "moduleResolution": "bundler",
+    "rootDir": "src"
   },
   "include": [
-    "src/**/*",
-    "types/**/*.d.ts"
+    "src/**/*"
   ],
   "exclude": [
-    "**/*.test.*",
-    "**/setupVitest.ts"
+    "dist",
+    "node_modules",
   ]
 }
