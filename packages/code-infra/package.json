@@ -4,12 +4,14 @@
   "description": "The code infra for tool package develop",
   "type": "module",
   "bin": {
-    "code-infra": "./src/bin/index.ts"
+    "code-infra": "./bin/index.ts"
   },
   "exports": {
     ".": "./src/index.ts"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "tsup"
+  },
   "dependencies": {
     "@eslint/config-helpers": "0.6.0",
     "@eslint/js": "10.0.1",
@@ -22,6 +24,7 @@
     "esbuild": "0.28.1",
     "fast-glob": "3.3.3",
     "globals": "17.6.0",
+    "nanoid": "^6.0.1",
     "rollup": "4.61.1",
     "rollup-plugin-esbuild": "6.2.1",
     "stylelint": "17.12.0",
@@ -29,18 +32,13 @@
     "yargs": "18.0.0",
     "yocto-spinner": "1.2.0"
   },
-  "files": [
-    "bin",
-    "src",
-    "dist/lib",
-    "README.md"
-  ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "tsup": "catalog:",
+    "typescript": "catalog:",
     "@types/node": "catalog:",
-    "@types/yargs": "17.0.35",
-    "typescript": "catalog:"
+    "@types/yargs": "catalog:"
   }
 }

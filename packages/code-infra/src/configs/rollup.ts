@@ -1,13 +1,13 @@
 import path from 'path';
 import { defu } from 'defu';
 import rollup, { defineConfig } from 'rollup';
-import type { InputOption, OutputOptions } from 'rollup';
 
 // Rollup plugins
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import esbuild from 'rollup-plugin-esbuild';
 
+import type { InputOption, OutputOptions } from 'rollup';
 import type { BundleOption, BundleType } from '../types/rollup';
 
 export const DEFAULT_INPUT = 'src/index.ts';

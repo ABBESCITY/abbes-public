@@ -3,5 +3,7 @@ packages:
 catalog:
   "typescript": "7.0.2"
   "@types/node": "25.9.2"
+  "@types/yargs": "17.0.35"
+  "tsup": "8.5.1"
 
 engineStrict: true

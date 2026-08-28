@@ -4,6 +4,8 @@
     "moduleResolution": "bundler",
   },
   "include": [
+    "bin",
+    "scripts",
     "src/**/*"
   ],
   "exclude": [
