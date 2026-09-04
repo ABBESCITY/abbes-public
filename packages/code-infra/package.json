@@ -13,32 +13,27 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@eslint/config-helpers": "0.6.0",
     "@eslint/js": "10.0.1",
-    "@pnpm/find-workspace-dir": "1000.1.5",
-    "@rollup/plugin-commonjs": "29.0.3",
-    "@rollup/plugin-node-resolve": "16.0.3",
+    "@eslint/config-helpers": "0.6.0",
+    "defu": "6.1.7",
     "chalk": "5.6.2",
     "cli-spinners": "3.4.0",
-    "defu": "6.1.7",
-    "esbuild": "0.28.1",
-    "fast-glob": "3.3.3",
-    "globals": "17.6.0",
-    "nanoid": "^6.0.1",
-    "rollup": "4.61.1",
-    "rollup-plugin-esbuild": "6.2.1",
-    "stylelint": "17.12.0",
-    "typescript-eslint": "8.60.1",
     "yargs": "18.0.0",
-    "yocto-spinner": "1.2.0"
+    "yocto-spinner": "1.2.0",
+    "fast-glob": "3.3.3"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "tsup": "catalog:",
-    "typescript": "catalog:",
+    "rollup-plugin-esbuild": "6.2.1",
+    "rollup-plugin-styles": "4.0.0",
+    "@rollup/plugin-commonjs": "29.0.3",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "@pnpm/find-workspace-dir": "1000.1.5",
     "@types/node": "catalog:",
-    "@types/yargs": "catalog:"
+    "@types/yargs": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
   }
 }
