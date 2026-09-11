@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "The code infra for tool package develop",
   "type": "module",
-  "bin": {
-    "code-infra": "./bin/index.ts"
-  },
   "exports": {
     ".": "./src/index.ts"
   },
@@ -13,27 +10,34 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@eslint/js": "10.0.1",
     "@eslint/config-helpers": "0.6.0",
-    "defu": "6.1.7",
+    "@eslint/js": "10.0.1",
     "chalk": "5.6.2",
     "cli-spinners": "3.4.0",
+    "defu": "6.1.7",
+    "fast-glob": "3.3.3",
+    "globby": "16.2.4",
+    "nanoid": "6.0.1",
+    "rollup": "4.63.1",
     "yargs": "18.0.0",
-    "yocto-spinner": "1.2.0",
-    "fast-glob": "3.3.3"
+    "yocto-spinner": "1.2.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "rollup-plugin-esbuild": "6.2.1",
-    "rollup-plugin-styles": "4.0.0",
+    "@pnpm/find-workspace-dir": "1000.1.5",
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@pnpm/find-workspace-dir": "1000.1.5",
     "@types/node": "catalog:",
     "@types/yargs": "catalog:",
+    "execa": "10.0.1",
+    "json5": "2.2.3",
+    "pkg-dir": "9.0.0",
+    "rollup-plugin-esbuild": "6.2.1",
+    "rollup-plugin-styles": "4.0.0",
     "tsup": "catalog:",
+    "type-fest": "5.9.0",
     "typescript": "catalog:"
   }
 }

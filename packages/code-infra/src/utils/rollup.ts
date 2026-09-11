@@ -3,7 +3,7 @@ import path from 'path';
 import { rollup } from 'rollup';
 import { nanoid } from 'nanoid/non-secure';
 
-import type { OptionContent, OptionId, OptionMap, WriteOption, WriteResult } from '../types/rollup';
+import type { CusGenerateOutput, OptionContent, OptionId, OptionMap, WriteOption, WriteResult } from '../types/rollup';
 import type { MergedRollupOptions, OutputOptions, RollupBuild, RollupOutput } from 'rollup';
 
 export function mergeRollupOptions() {}
@@ -35,13 +35,20 @@ export async function createBundleMapGraphs(
   return bundleMap;
 }
 
-export async function generateRollupOutput(
-  bundleMap: Map<OptionId, RollupBuild>,
-  optionMap: OptionMap,
-  outputType: 'asset' | 'js',
-): Promise<RollupOutput[]> {
+export async function generateBundleOutput({
+  tempDir,
+  outputType,
+  bundleMap,
+  optionMap,
+}: {
+  bundleMap: Map<OptionId, RollupBuild>;
+  optionMap: OptionMap;
+  outputType: 'asset' | 'js';
+  tempDir: string;
+}): Promise<CusGenerateOutput[]> {
   const rollupOutputs: RollupOutput[] = [];
   const outputOptions: OutputOptions[] = [];
+  const generateOutputs: CusGenerateOutput[] = [];
 
   for (const option of optionMap.values()) {
     option.outputOption.forEach((output) => {
@@ -50,50 +57,32 @@ export async function generateRollupOutput(
   }
 
   for (const bundle of bundleMap.values()) {
-    outputOptions.forEach(async (outputOption) => {
-      const bundleOutput = await bundle.generate(outputOption);
+    for (const outputOption of outputOptions) {
+      const bundleOutput = await bundle.generate({
+        ...outputOption,
+        dir: tempDir,
+      });
       rollupOutputs.push(bundleOutput);
-    });
+      generateOutputs.push({
+        tempDir: tempDir,
+        originalDir: outputOption.dir as string,
+      });
+    }
   }
-
-  return rollupOutputs;
-}
-
-export async function writeOutputsToDist(rollupOutputs: RollupOutput[], option: WriteOption) {
-  const { verbose = false } = option;
-  const writeResults: WriteResult[] = [];
 
   for (const { output } of rollupOutputs) {
     for (const chunk of output) {
-      let fileSize: number;
       const filePath = chunk.fileName;
-
       await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
       if (chunk.type === 'asset') {
         const content = chunk.source;
         await fs.promises.writeFile(filePath, content);
-        fileSize = content.length;
       } else {
         await fs.promises.writeFile(filePath, chunk.code);
-        fileSize = chunk.code.length;
-      }
-
-      const result: WriteResult = {
-        type: chunk.type,
-        filePath,
-        fileName: chunk.fileName,
-        fileSize: fileSize,
-        isEntry: chunk.type === 'chunk' ? chunk.isEntry || false : undefined,
-      };
-
-      writeResults.push(result);
-
-      if (verbose) {
-        const sizeKB = (fileSize / 1024).toFixed(2);
-        const entryLabel = result.isEntry ? ' (entry)' : '';
-        console.log(`✅ ${chunk.type}: ${filePath} (${sizeKB}KB)${entryLabel}`);
       }
     }
   }
+
+  return generateOutputs;
 }

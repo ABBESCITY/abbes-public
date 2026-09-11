@@ -1,10 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import JSON5 from 'json5';
+import { $ } from 'execa';
 
-import { TYPESCRIPT_DECLARE_TEMP_DIR, TYPESCRIPT_DEFAULT_CONFIG_FILE } from '../constants/config';
+import { TYPESCRIPT_DEFAULT_CONFIG_FILE, TYPESCRIPT_DEFAULT_OUTPUT_DIR } from '../constants/config';
+import { CusGenerateOutput } from '../types/rollup';
 
 // Copy the source directory *.d.ts file
-export async function copyDeclarationFils(sourceDirectory: string, targetDirectory: string) {
+async function copyDeclarationFils(sourceDirectory: string, targetDirectory: string) {
   const fullSourcePath = path.resolve(sourceDirectory);
   const fullTargetPath = path.resolve(targetDirectory);
 
@@ -22,14 +25,41 @@ export async function copyDeclarationFils(sourceDirectory: string, targetDirecto
   });
 }
 
-export async function emitDeclarations(tsconfigPath: string, tempDir: string) {}
+// Emit directory files by tsc
+async function emitDeclarations(tsconfigPath: string, sourceDir: string, targetDir: string) {
+  const $$ = $({ stdio: 'inherit' });
+  await $$`tsc
+      -p ${tsconfigPath}
+      --rootDir ${sourceDir}
+      --outDir ${targetDir}
+      --declaration
+      --emitDeclarationOnly
+      --noEmit false
+      --composite false
+      --incremental false
+      --declarationMap false`;
+}
 
-export async function generateDeclareOutput(tsconfigPath: string, option: { buildTempDir: string }) {
-  const { buildTempDir } = option;
+// Get tsconfig file's outDir property
+async function getOutDirFromFile(tsconfigPath: string): Promise<string | undefined> {
+  const raw = await fs.promises.readFile(tsconfigPath, 'utf8');
+  const config = JSON5.parse(raw);
+  const outDir: string | undefined = config.compilerOptions?.outDir;
+  return outDir ? path.resolve(path.dirname(tsconfigPath), outDir) : undefined;
+}
 
-  const tempDir = path.join(buildTempDir, TYPESCRIPT_DECLARE_TEMP_DIR);
+export async function generateDeclareOutput({
+  sourceDir,
+  targetDir,
+  tsconfigFile,
+}: {
+  sourceDir: string;
+  targetDir: string;
+  tsconfigFile: string;
+}): Promise<CusGenerateOutput[]> {
+  await copyDeclarationFils(sourceDir, targetDir);
 
-  const isTsconfigExisted = await fs.promises.stat(tsconfigPath).then(
+  const isTsconfigExisted = await fs.promises.stat(tsconfigFile).then(
     (file) => file.isFile(),
     () => false,
   );
@@ -41,5 +71,14 @@ export async function generateDeclareOutput(tsconfigPath: string, option: { buil
     );
   }
 
-  await emitDeclarations(tsconfigPath, tempDir);
+  await emitDeclarations(tsconfigFile, sourceDir, targetDir);
+
+  const outDir = await getOutDirFromFile(tsconfigFile);
+
+  return [
+    {
+      tempDir: targetDir,
+      originalDir: outDir || TYPESCRIPT_DEFAULT_OUTPUT_DIR,
+    },
+  ];
 }

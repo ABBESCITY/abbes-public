@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { defu } from 'defu';
 import rollup, { defineConfig } from 'rollup';
 
@@ -29,7 +29,7 @@ export function createRollupInput(inputEntry: string, entryType: 'directory' | '
 
 export function createRollupAssetOutput(assetsDir: string = ROLLUP_DEFAULT_OUTPUT_ASSETS_DIR): CusOutputOptions {
   return {
-    dir: assetsDir,
+    dir: ROLLUP_DEFAULT_OUTPUT_ROOT_DIR,
     format: 'esm',
     outputType: 'asset',
     assetFileNames: assetsDir,
@@ -42,9 +42,10 @@ export function createRollupJsOutput(
 ): CusOutputOptions[] {
   if (Array.isArray(bundles)) {
     return bundles.map((bundle) => ({
-      dir: `${ROLLUP_DEFAULT_OUTPUT_ROOT_DIR}/${bundle}`,
+      dir: ROLLUP_DEFAULT_OUTPUT_ROOT_DIR,
       format: bundle,
       outputType: 'js',
+      entryFileNames: `${bundle}/[name].js`,
       preserveModules: true,
       preserveModulesRoot: ROLLUP_DEFAULT_SOURCE_ROOT_DIR,
       ...bundleOption,
@@ -52,9 +53,10 @@ export function createRollupJsOutput(
   } else {
     return [
       {
-        dir: `${ROLLUP_DEFAULT_OUTPUT_ROOT_DIR}/${bundles}`,
+        dir: ROLLUP_DEFAULT_OUTPUT_ROOT_DIR,
         format: bundles,
         outputType: 'js',
+        entryFileNames: `${bundles}/[name].js`,
         preserveModules: true,
         preserveModulesRoot: ROLLUP_DEFAULT_SOURCE_ROOT_DIR,
         ...bundleOption,
