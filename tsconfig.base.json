@@ -1,19 +1,14 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "allowJs": true,
-    "checkJs": true,
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "node"
-    ]
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "target": "ES2025",
+    "module": "ESNEXT",
+    "moduleResolution": "bundler",
   },
   "references": [
     {

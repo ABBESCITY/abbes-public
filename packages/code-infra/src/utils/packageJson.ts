@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { PackageJson } from 'type-fest';
-import { CusGenerateOutput } from '../types/rollup';
+import type { PackageJson } from 'type-fest';
+import type { CusGenerateOutput } from '../types/cusRollupConfig';
 
 export async function createPackageBin({ targetDir }: { targetDir: string }): Promise<string> {
   return '';

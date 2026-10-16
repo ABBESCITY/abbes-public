@@ -8,7 +8,7 @@ import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 
-import extractCssFromBundle from '../plugins/extractCssFromBundle';
+import extractCssFromBundle from '../plugins/rollup/extractCssFromBundle';
 
 import {
   ROLLUP_DEFAULT_SOURCE_ROOT_DIR,
@@ -18,22 +18,18 @@ import {
 } from '../constants/config';
 
 import type { InputOption } from 'rollup';
-import type { BundleOption, BundleType, CusOutputOptions } from '../types/rollup';
+import type { BundleOption, BundleType, CusOutputOptions } from '../types/cusRollupConfig';
 
 export function createRollupInput(inputEntry: string, entryType: 'directory' | 'file'): InputOption {
   if (entryType === 'directory') {
     const resolvedPath = path.resolve(inputEntry);
+    let obg = { test: '1' };
   }
   return inputEntry;
 }
 
 export function createRollupAssetOutput(assetsDir: string = ROLLUP_DEFAULT_OUTPUT_ASSETS_DIR): CusOutputOptions {
-  return {
-    dir: ROLLUP_DEFAULT_OUTPUT_ROOT_DIR,
-    format: 'esm',
-    outputType: 'asset',
-    assetFileNames: assetsDir,
-  };
+  return { dir: ROLLUP_DEFAULT_OUTPUT_ROOT_DIR, format: 'esm', outputType: 'asset', assetFileNames: assetsDir };
 }
 
 export function createRollupJsOutput(

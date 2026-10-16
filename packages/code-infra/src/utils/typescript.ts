@@ -4,7 +4,8 @@ import JSON5 from 'json5';
 import { $ } from 'execa';
 
 import { TYPESCRIPT_DEFAULT_CONFIG_FILE, TYPESCRIPT_DEFAULT_OUTPUT_DIR } from '../constants/config';
-import { CusGenerateOutput } from '../types/rollup';
+
+import type { CusGenerateOutput } from '../types/cusRollupConfig';
 
 // Copy the source directory *.d.ts file
 async function copyDeclarationFils(sourceDirectory: string, targetDirectory: string) {
@@ -75,10 +76,5 @@ export async function generateDeclareOutput({
 
   const outDir = await getOutDirFromFile(tsconfigFile);
 
-  return [
-    {
-      tempDir: targetDir,
-      originalDir: outDir || TYPESCRIPT_DEFAULT_OUTPUT_DIR,
-    },
-  ];
+  return [{ tempPath: targetDir, originalPath: outDir || TYPESCRIPT_DEFAULT_OUTPUT_DIR }];
 }

@@ -3,8 +3,8 @@ import path from 'path';
 import { rollup } from 'rollup';
 import { nanoid } from 'nanoid/non-secure';
 
-import type { CusGenerateOutput, OptionContent, OptionId, OptionMap, WriteOption, WriteResult } from '../types/rollup';
 import type { MergedRollupOptions, OutputOptions, RollupBuild, RollupOutput } from 'rollup';
+import type { CusGenerateOutput, OptionContent, OptionId, OptionMap } from '../types/cusRollupConfig';
 
 export function mergeRollupOptions() {}
 
@@ -64,8 +64,8 @@ export async function generateBundleOutput({
       });
       rollupOutputs.push(bundleOutput);
       generateOutputs.push({
-        tempDir: tempDir,
-        originalDir: outputOption.dir as string,
+        tempPath: tempDir,
+        originalPath: outputOption.dir as string,
       });
     }
   }

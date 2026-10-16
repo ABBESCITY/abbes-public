@@ -1,5 +1,7 @@
 import fs from 'node:fs';
-import { HandlerFunctionArgs } from '../types/rollup';
+import { defu } from 'defu';
+
+type ConfigObject = Record<string, any>;
 
 export async function mapConcurrently<T, R>(
   items: T[],
@@ -29,11 +31,7 @@ export async function mapConcurrently<T, R>(
   return results;
 }
 
-export async function recursiveCopyFile({
-  source,
-  target,
-  verbose = true,
-}: HandlerFunctionArgs<{ source: string; target: string }>) {
+export async function recursiveCopyFile({ source, target, verbose = true }: any) {
   try {
     await fs.promises.cp(source, target, { recursive: true });
     if (verbose) {
@@ -49,4 +47,8 @@ export async function recursiveCopyFile({
     }
     throw err;
   }
+}
+
+export function mergeConfig<T extends ConfigObject, D extends ConfigObject>(config: T, defaultConfig: D) {
+  return defu(config, defaultConfig);
 }

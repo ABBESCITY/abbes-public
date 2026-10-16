@@ -3,16 +3,24 @@
   "version": "0.0.0",
   "description": "The code infra for tool package develop",
   "type": "module",
+  "bin": {
+    "code-infra": "./src/bin.ts"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsup"
+    "prebuild": "node ./script/prebuild.ts",
+    "build": "tsdown"
   },
   "dependencies": {
+    "@eslint-react/eslint-plugin": "5.27.3",
     "@eslint/config-helpers": "0.6.0",
     "@eslint/js": "10.0.1",
+    "@eslint/json": "2.1.1",
+    "@eslint/markdown": "8.0.3",
     "@next/eslint-plugin-next": "16.4.0",
+    "@vitest/eslint-plugin": "1.6.27",
     "chalk": "5.6.2",
     "cli-spinners": "3.4.0",
     "defu": "6.1.7",
@@ -23,11 +31,14 @@
     "eslint-plugin-mdx": "3.8.1",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-testing-library": "7.16.2",
     "fast-glob": "3.3.3",
     "globals": "17.13.0",
     "globby": "16.2.4",
     "nanoid": "6.0.1",
     "rollup": "4.63.1",
+    "stylelint-config-standard": "40.0.0",
+    "stylelint-config-standard-scss": "17.0.0",
     "typescript-eslint": "8.71.1",
     "yargs": "18.0.0",
     "yocto-spinner": "1.2.0"
@@ -45,9 +56,11 @@
     "execa": "10.0.1",
     "json5": "2.2.3",
     "pkg-dir": "9.0.0",
+    "prettier": "3.9.10",
     "rollup-plugin-esbuild": "6.2.1",
     "rollup-plugin-styles": "4.0.0",
-    "tsup": "catalog:",
+    "stylelint": "17.16.0",
+    "tsdown": "0.23.1",
     "type-fest": "5.9.0",
     "typescript": "catalog:"
   }

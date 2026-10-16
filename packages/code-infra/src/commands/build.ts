@@ -21,45 +21,36 @@ import {
 
 import { mapConcurrently, recursiveCopyFile } from '../utils/other';
 
-import type { Argv } from 'yargs';
-import type { CusGenerateOutput, HandlerFunctionArgs } from '../types/rollup';
+import type { Argv, CommandModule } from 'yargs';
+import type { CusGenerateOutput, HandlerFunctionArgs } from '../types/cusRollupConfig.js';
 
 export type BuildArgs = {
   verbose: boolean;
-  createBin: boolean;
   copyFiles: string[];
+  createBin: boolean;
   configFile: string;
   tsconfigFile: string;
 };
 
-// Command
 export default {
   command: 'build',
   describe: 'Builds the package for publishing.',
   builder: (yargs: Argv) =>
     yargs
       .option('copyFiles', {
-        type: 'string',
+        type: 'array',
+        default: [] as string[],
+        coerce: (val: (string | number)[]) => val.map(String),
         describe: '',
       })
-      .option('configFile', {
-        type: 'string',
-        required: true,
-        describe: 'The rollup config file path for build.',
-      })
+      .option('configFile', { type: 'string', required: true, describe: 'The rollup config file path for build.' })
       .option('tsconfigFile', {
         type: 'string',
         required: true,
         describe: 'The typescript config file path for build.',
       })
-      .option('createBin', {
-        type: 'boolean',
-        describe: 'The package will build the bin script',
-      })
-      .option('verbose', {
-        type: 'boolean',
-        default: false,
-      }),
+      .option('createBin', { type: 'boolean', default: false, describe: 'The package will build the bin script' })
+      .option('verbose', { type: 'boolean', default: false }),
   handler: async ({ copyFiles, configFile, tsconfigFile, createBin, verbose }: BuildArgs) => {
     const workspaceDir = (await packageDirectory({ cwd: process.cwd() })) ?? process.cwd();
 
@@ -123,7 +114,7 @@ export default {
     // Move temp fils into truth directory
     await moveTempToDisk([...jsOutputs, ...assetOutputs, ...declareOutput, ...packageJsonOutput, ...copyOtherOutput]);
   },
-};
+} satisfies CommandModule<{}, BuildArgs>;
 
 async function moveTempToDisk(tempPathList: CusGenerateOutput[]) {
   await mapConcurrently(
@@ -219,10 +210,5 @@ async function copyOtherHandler({
     20,
   );
 
-  return [
-    {
-      tempPath: targetTempDir,
-      originalPath: targetDir,
-    },
-  ];
+  return [{ tempPath: targetTempDir, originalPath: targetDir }];
 }

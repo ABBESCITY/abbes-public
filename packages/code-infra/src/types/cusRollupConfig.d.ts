@@ -17,9 +17,7 @@ export type WriteResult = {
   isEntry?: boolean;
 };
 
-export type HandlerFunctionArgs<T extends Record> = T & {
-  verbose?: boolean;
-};
+export type HandlerFunctionArgs<T extends Record> = T & { verbose?: boolean };
 
 export interface CusOutputOptions extends OutputOptions {
   outputType: 'asset' | 'js';
