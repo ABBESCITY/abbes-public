@@ -19,8 +19,10 @@ jobs:
         uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_PREFIX: v
           PRERELEASE: true
+          DEFAULT_BUMP: none
           PRE_RELEASE_BRANCHES: 'chore.*'
-          default_prerelease_bump: prepatch
+          default_prerelease_bump: prerelease
           RELEASE_BRANCHES: 'main,master'
           PRERELEASE_SUFFIX: beta
