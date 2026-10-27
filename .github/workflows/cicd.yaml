@@ -1,0 +1,26 @@
+name: Hotfix Prerelease Tag
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - 'chore/**'
+
+jobs:
+  tag-prerelease:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump version and push prerelease tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE: true
+          PRE_RELEASE_BRANCHES: 'chore.*'
+          default_prerelease_bump: prepatch
+          RELEASE_BRANCHES: 'main,master'
+          PRERELEASE_SUFFIX: beta
