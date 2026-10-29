@@ -22,5 +22,8 @@
     "typescript",
     "typescriptreact",
     "javascript.esm"
-  ]
+  ],
+  "files.exclude": {
+    "**/node_modules": true
+  }
 }
