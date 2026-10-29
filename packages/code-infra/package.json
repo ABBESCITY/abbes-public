@@ -4,56 +4,69 @@
   "description": "The code infra for tool package develop",
   "type": "module",
   "bin": {
-    "code-infra": "./bin/index.mjs"
+    "code-infra": "./src/bin.ts"
   },
   "exports": {
-    ".": {
-      "types": "./dist/lib/index.d.ts",
-      "import": "./src/index.mjs"
-    }
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json"
+    "prebuild": "node ./script/prebuild.ts",
+    "build": "node ./script/build.ts"
   },
   "dependencies": {
-    "@babel/core": "7.29.7",
-    "@babel/plugin-transform-runtime": "7.29.7",
-    "@babel/preset-env": "7.29.7",
-    "@babel/preset-react": "7.29.7",
-    "@babel/preset-typescript": "7.29.7",
+    "@eslint-react/eslint-plugin": "5.27.3",
     "@eslint/config-helpers": "0.6.0",
     "@eslint/js": "10.0.1",
-    "@pnpm/find-workspace-dir": "1000.1.5",
-    "@rollup/plugin-babel": "7.1.0",
-    "@rollup/plugin-node-resolve": "16.0.3",
-    "babel-plugin-optimize-clsx": "2.6.2",
+    "@eslint/json": "2.1.1",
+    "@eslint/markdown": "8.0.3",
+    "@next/eslint-plugin-next": "16.4.0",
+    "@vitest/eslint-plugin": "1.6.27",
     "chalk": "5.6.2",
     "cli-spinners": "3.4.0",
     "defu": "6.1.7",
-    "execa": "^9.6.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-compat": "7.0.2",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-mdx": "3.8.1",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-testing-library": "7.16.2",
     "fast-glob": "3.3.3",
-    "globals": "17.6.0",
-    "listr2": "10.2.1",
-    "rollup": "4.61.1",
-    "stylelint": "17.12.0",
-    "typescript-eslint": "8.60.1",
+    "globals": "17.13.0",
+    "globby": "16.2.4",
+    "nanoid": "6.0.1",
+    "rollup": "4.63.1",
+    "stylelint-config-standard": "40.0.0",
+    "stylelint-config-standard-scss": "17.0.0",
+    "typescript-eslint": "8.71.1",
     "yargs": "18.0.0",
     "yocto-spinner": "1.2.0"
   },
-  "files": [
-    "bin",
-    "src",
-    "dist/lib",
-    "README.md"
-  ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@types/babel__core": "7.20.5",
-    "@types/babel__plugin-transform-runtime": "7.9.5",
-    "@types/babel__preset-env": "7.10.0",
-    "@types/yargs": "17.0.35",
-    "type-fest": "5.7.0"
+    "@pnpm/find-workspace-dir": "1000.1.5",
+    "@rollup/plugin-commonjs": "29.0.3",
+    "@rollup/plugin-json": "6.1.0",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-terser": "1.0.0",
+    "@types/eslint-plugin-jsx-a11y": "6.10.1",
+    "@types/node": "catalog:",
+    "@types/yargs": "catalog:",
+    "execa": "10.0.1",
+    "json5": "2.2.3",
+    "pkg-dir": "9.0.0",
+    "prettier": "3.9.10",
+    "rollup-merge-config": "0.0.12",
+    "rollup-plugin-esbuild": "6.2.1",
+    "rollup-plugin-library-assets": "0.1.1",
+    "rollup-plugin-no-emit": "1.3.0",
+    "rollup-plugin-styles": "4.0.0",
+    "stylelint": "17.16.0",
+    "tsdown": "0.23.1",
+    "type-fest": "5.9.0",
+    "typescript": "catalog:"
   }
 }
