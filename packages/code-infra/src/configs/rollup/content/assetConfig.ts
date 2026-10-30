@@ -5,8 +5,9 @@ import { createRollupExternal, createRollupInput, createRollupOutput, createRoll
 
 import { merge } from '@/utils/merge';
 import { getPackageRelativePath } from '@/utils/path';
+import { createRollupMarkerPlugin } from '@/plugins/rollup/marker';
 
-import type { CreateRollupConfigOption } from '@/types/cusRollupConfig';
+import type { CreateRollupConfigOption } from '@/types/rollupConfig';
 
 export function createAssetRollupConfig(
   options: CreateRollupConfigOption & { needLibraryAssetsPlugin?: boolean },
@@ -16,19 +17,18 @@ export function createAssetRollupConfig(
     options;
 
   const packagePath = getPackageRelativePath(packageName);
+  const markPlugin = createRollupMarkerPlugin({ packageName, configType: 'Asset' });
 
   let assetRollupConfig: rollup.RollupOptions | undefined;
 
   const defaultConfig = {
-    packageName: packageName,
-    outputType: 'Asset',
     input: createRollupInput({
       packagePath: packagePath,
       entryType: entryOptions?.type,
       multiExclude: entryOptions?.multiExclude,
     }),
     output: createRollupOutput({ packagePath: packagePath, directory: outputDir }),
-    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: true }),
+    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: true, additional: [markPlugin] }),
     external: createRollupExternal({ packagePath: packagePath, additional: externalAdditional }),
   };
 

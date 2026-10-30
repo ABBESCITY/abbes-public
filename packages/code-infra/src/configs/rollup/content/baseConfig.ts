@@ -4,8 +4,9 @@ import { createRollupExternal, createRollupInput, createRollupOutput, createRoll
 
 import { merge } from '@/utils/merge';
 import { getPackageRelativePath } from '@/utils/path';
+import { createRollupMarkerPlugin } from '@/plugins/rollup/marker';
 
-import type { CreateRollupConfigOption } from '@/types/cusRollupConfig';
+import type { CreateRollupConfigOption } from '@/types/rollupConfig';
 
 export function createBaseRollupConfig(
   options: CreateRollupConfigOption,
@@ -14,17 +15,16 @@ export function createBaseRollupConfig(
   const { packageName, outputDir, needTerserPlugin, externalAdditional, entryOptions } = options;
 
   const packagePath = getPackageRelativePath(packageName);
+  const markPlugin = createRollupMarkerPlugin({ packageName, configType: 'Javascript' });
 
   const defaultConfig = {
-    packageName: packageName,
-    outputType: 'Javascript',
     input: createRollupInput({
       packagePath: packagePath,
       entryType: entryOptions?.type,
       multiExclude: entryOptions?.multiExclude,
     }),
     output: createRollupOutput({ packagePath: packagePath, directory: outputDir }),
-    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: false }),
+    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: false, additional: [markPlugin] }),
     external: createRollupExternal({ packagePath: packagePath, additional: externalAdditional }),
   };
 

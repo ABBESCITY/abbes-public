@@ -1,7 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { packageDirectory } from 'pkg-dir';
 
 import { PACKAGES_DIR } from '@/constants/config';
+
+/** Find the nearest package directory from the current working directory. */
+export async function getWorkspace(): Promise<string> {
+  const workspaceDir = await packageDirectory({ cwd: process.cwd() });
+
+  if (!workspaceDir) {
+    throw new Error(`Could not find a workspace directory from ${process.cwd()}`);
+  }
+
+  return workspaceDir;
+}
 
 /**
  * Return the names of the direct child directories of `baseDirectory`,

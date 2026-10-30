@@ -13,7 +13,8 @@ import { BUILD_ASSETS_DIR, BUILD_DIR, BUILD_JS_DIR, SOURCE_DIR } from '@/constan
 import { extractPackageName } from '../utils';
 import { getChildDirectories } from '@/utils/path';
 
-import type { BundleType } from '@/types/cusRollupConfig';
+import type rollup from 'rollup';
+import type { BundleType } from '@/types/rollupConfig';
 
 export function createRollupInput(options: {
   packagePath: string;
@@ -59,13 +60,18 @@ export function createRollupExternal(options: {
   };
 }
 
-export function createRollupPlugins(options: { needTerser: boolean; hasAssets: boolean }) {
-  const { needTerser, hasAssets = false } = options;
+export function createRollupPlugins(options: {
+  needTerser: boolean;
+  hasAssets: boolean;
+  additional?: rollup.Plugin[];
+}) {
+  const { needTerser, additional, hasAssets = false } = options;
 
   const basePlugins = [nodeResolve(), resolveCommonjs(), json()];
 
-  if (needTerser) basePlugins.concat(terser());
-  if (hasAssets) basePlugins.concat(jsNoEmit());
+  if (needTerser) basePlugins.push(terser());
+  if (hasAssets) basePlugins.push(jsNoEmit());
+  if (additional) basePlugins.concat(additional);
 
   return basePlugins;
 }
