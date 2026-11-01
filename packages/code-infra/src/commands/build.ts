@@ -25,7 +25,13 @@ const buildCommand: CommandModule<{}, BuildArguments> = {
         default: TS_CONFIG_FILE,
       })
       .option('copy', { type: 'string', array: true, describe: 'Files to copy into the build output' }),
-  handler: async () => {},
+  handler: async () => {
+    // Build Javascript and Assets
+    // Build Declare
+    // Rewrite Package.json
+    // Copy need files
+    // Commit output
+  },
 };
 
 export default buildCommand;

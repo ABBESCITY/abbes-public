@@ -1,0 +1,53 @@
+import path from 'node:path';
+import { execa } from 'execa';
+
+import type { OutputResult } from '@/types';
+
+export interface TsConfigOptions {
+  path: string;
+  outputDir: string;
+}
+
+/** Load the effective tsconfig using the TypeScript CLI and require an output directory. */
+export async function loadTsConfig(configPath: string): Promise<TsConfigOptions> {
+  const resolvedConfigPath = path.resolve(configPath);
+  let config: { compilerOptions?: { declarationDir?: string; outDir?: string } };
+
+  try {
+    const { stdout } = await execa('pnpm', ['exec', 'tsc', '--showConfig', '--project', resolvedConfigPath], {
+      cwd: path.dirname(resolvedConfigPath),
+    });
+    config = JSON.parse(stdout) as typeof config;
+  } catch (error) {
+    throw new Error(`Failed to load TypeScript config at "${resolvedConfigPath}" with tsc --showConfig.`, {
+      cause: error,
+    });
+  }
+
+  const outputDir = config.compilerOptions?.declarationDir ?? config.compilerOptions?.outDir;
+  if (!outputDir) {
+    throw new Error(`TypeScript config at "${resolvedConfigPath}" must define "declarationDir" or "outDir".`);
+  }
+
+  return {
+    path: resolvedConfigPath,
+    outputDir: path.resolve(path.dirname(resolvedConfigPath), outputDir),
+  };
+}
+
+export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: string): Promise<OutputResult> {
+  const configPath = path.resolve(tsOptions.path);
+  const tempOutputDir = path.resolve(outputTempDir);
+
+  try {
+    await execa(
+      'pnpm',
+      ['exec', 'tsc', '--project', configPath, '--declaration', '--emitDeclarationOnly', '--outputDir', tempOutputDir],
+      { cwd: path.dirname(configPath), stdio: 'inherit' },
+    );
+  } catch (error) {
+    throw new Error(`Failed to generate declarations from TypeScript config at "${configPath}".`, { cause: error });
+  }
+
+  return { outputDir: tsOptions.outputDir, outputTemDir: tempOutputDir };
+}
