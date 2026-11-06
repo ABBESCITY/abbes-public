@@ -3,33 +3,32 @@ import libraryAssets from 'rollup-plugin-library-assets';
 
 import { createRollupExternal, createRollupInput, createRollupOutput, createRollupPlugins } from '../core';
 
-import { merge } from '@/utils/merge';
-import { getPackageRelativePath } from '@/utils/path';
-import { createRollupMarkerPlugin } from '@/plugins/rollup/marker';
+import { merge } from '#/utils/merge';
+import { createRollupMarkerPlugin } from '#/plugins/rollup/marker';
 
-import type { CreateRollupConfigOption } from '@/types/rollupConfig';
+import type { ConfigContext, ConfigMeta, CreateRollupConfigOption } from '#/types/rollupConfig';
 
 export function createAssetRollupConfig(
+  configCtx: ConfigContext,
   options: CreateRollupConfigOption & { needLibraryAssetsPlugin?: boolean },
   customConfig?: rollup.RollupOptions,
 ): rollup.RollupOptions {
-  const { packageName, outputDir, entryOptions, externalAdditional, needTerserPlugin, needLibraryAssetsPlugin } =
-    options;
+  const { outputDir, externalAdditional, needLibraryAssetsPlugin } = options;
+  const { inputList, packageName, packagePath, packageJson, needSourceMap, needTerserPlugin } = configCtx;
 
-  const packagePath = getPackageRelativePath(packageName);
-  const markPlugin = createRollupMarkerPlugin({ packageName, configType: 'Asset' });
+  const configMeta: ConfigMeta = { packageName, packagePath, packageJson, bundleTypes: ['esm'], configType: 'Asset' };
 
   let assetRollupConfig: rollup.RollupOptions | undefined;
 
   const defaultConfig = {
-    input: createRollupInput({
-      packagePath: packagePath,
-      entryType: entryOptions?.type,
-      multiExclude: entryOptions?.multiExclude,
+    input: createRollupInput(configMeta, inputList),
+    output: createRollupOutput(configMeta, { directory: outputDir, isAsset: true, isSourceMap: needSourceMap }),
+    plugins: createRollupPlugins(configMeta, {
+      needTerser: needTerserPlugin,
+      hasAssets: true,
+      additional: [createRollupMarkerPlugin(configMeta)],
     }),
-    output: createRollupOutput({ packagePath: packagePath, directory: outputDir }),
-    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: true, additional: [markPlugin] }),
-    external: createRollupExternal({ packagePath: packagePath, additional: externalAdditional }),
+    external: createRollupExternal(configMeta, { additional: externalAdditional }),
   };
 
   if (customConfig) {

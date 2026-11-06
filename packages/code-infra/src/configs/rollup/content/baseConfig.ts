@@ -2,30 +2,36 @@ import rollup from 'rollup';
 
 import { createRollupExternal, createRollupInput, createRollupOutput, createRollupPlugins } from '../core';
 
-import { merge } from '@/utils/merge';
-import { getPackageRelativePath } from '@/utils/path';
-import { createRollupMarkerPlugin } from '@/plugins/rollup/marker';
+import { merge } from '#/utils/merge';
+import { createRollupMarkerPlugin } from '#/plugins/rollup/marker';
 
-import type { CreateRollupConfigOption } from '@/types/rollupConfig';
+import type { ConfigContext, ConfigMeta, CreateRollupConfigOption } from '#/types/rollupConfig';
 
 export function createBaseRollupConfig(
+  configCtx: ConfigContext,
   options: CreateRollupConfigOption,
   customConfig?: rollup.RollupOptions,
 ): rollup.RollupOptions {
-  const { packageName, outputDir, needTerserPlugin, externalAdditional, entryOptions } = options;
+  const { outputDir, externalAdditional } = options;
+  const { inputList, bundleTypes, packageName, packagePath, packageJson, needSourceMap, needTerserPlugin } = configCtx;
 
-  const packagePath = getPackageRelativePath(packageName);
-  const markPlugin = createRollupMarkerPlugin({ packageName, configType: 'Javascript' });
+  const configMeta: ConfigMeta = {
+    packageName,
+    packagePath,
+    packageJson,
+    bundleTypes: bundleTypes,
+    configType: 'Javascript',
+  };
 
   const defaultConfig = {
-    input: createRollupInput({
-      packagePath: packagePath,
-      entryType: entryOptions?.type,
-      multiExclude: entryOptions?.multiExclude,
+    input: createRollupInput(configMeta, inputList),
+    output: createRollupOutput(configMeta, { directory: outputDir, isSourceMap: needSourceMap }),
+    plugins: createRollupPlugins(configMeta, {
+      needTerser: needTerserPlugin,
+      hasAssets: false,
+      additional: [createRollupMarkerPlugin(configMeta)],
     }),
-    output: createRollupOutput({ packagePath: packagePath, directory: outputDir }),
-    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: false, additional: [markPlugin] }),
-    external: createRollupExternal({ packagePath: packagePath, additional: externalAdditional }),
+    external: createRollupExternal(configMeta, { additional: externalAdditional }),
   };
 
   if (customConfig) return merge(customConfig, defaultConfig);

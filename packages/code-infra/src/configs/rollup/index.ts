@@ -1,51 +1,78 @@
 import rollup from 'rollup';
 
-import { createAssetRollupConfig } from './content/assetConfig';
+import { getPackagePath } from '#/utils/path';
 import { createBaseRollupConfig } from './content/baseConfig';
+import { createAssetRollupConfig } from './content/assetConfig';
 
-export * from './content/baseConfig';
-export * from './content/assetConfig';
+import type { BundleType, ConfigContext, ConfigMeta } from '#/types/rollupConfig';
+import { getInputByPackageJson, readValidatePackageJson } from '#/utils/build/packageJson';
+import { PackageJson } from 'type-fest';
+
+interface ConfigOption {
+  rollupConfig: rollup.RollupOptions;
+}
+
+interface JsConfigOptions extends ConfigOption {
+  outputDir?: string;
+  externalAdditional?: string[];
+}
+
+interface AssetConfigOptions extends JsConfigOptions {
+  needLibraryAssetsPlugin?: boolean;
+}
+
+export interface CreateRollupConfigOptions {
+  packageName: string;
+  bundleTypes?: BundleType[];
+  needSourceMap?: boolean;
+  needTerserPlugin?: boolean;
+  jsConfigOptions?: JsConfigOptions;
+  assetConfigOptions?: AssetConfigOptions;
+}
 
 export function createRollupConfig({
   packageName,
-  entryType = 'single',
-  multiExclude,
-  jsOptions,
-  assetOptions,
-  needTerser,
-}: {
-  packageName: string;
-  entryType?: 'single' | 'multiple';
-  multiExclude?: string[];
-  jsOptions?: { outputDir?: string; externalAdditional?: string[]; customConfig?: rollup.RollupOptions };
-  assetOptions?: { outputDir?: string; needLibraryAssets?: boolean; customConfig?: rollup.RollupOptions };
-  needTerser?: boolean;
-  externalAdditional?: string[];
-}) {
+  bundleTypes = ['esm'],
+  needSourceMap = false,
+  needTerserPlugin = false,
+  jsConfigOptions,
+  assetConfigOptions,
+}: CreateRollupConfigOptions) {
+  const packagePath = getPackagePath(packageName);
+  const { packageJson, valid, errors } = readValidatePackageJson(packagePath);
+
+  if (!valid) {
+    throw new Error(`Validate package.json failed. errors: ${errors[0]}`);
+  }
+
+  const configContext: ConfigContext = {
+    inputList: getInputByPackageJson(packageJson as PackageJson),
+    packageName,
+    packagePath,
+    packageJson: packageJson as PackageJson,
+    bundleTypes,
+    needSourceMap,
+    needTerserPlugin,
+  };
+
   const rollupConfig = [
     createBaseRollupConfig(
-      {
-        packageName: packageName,
-        outputDir: jsOptions?.outputDir,
-        needTerserPlugin: needTerser,
-        entryOptions: { type: entryType, multiExclude: multiExclude },
-        externalAdditional: jsOptions?.externalAdditional,
-      },
-      jsOptions?.customConfig ?? {},
+      configContext,
+      { outputDir: jsConfigOptions?.outputDir, externalAdditional: jsConfigOptions?.externalAdditional },
+      jsConfigOptions?.rollupConfig,
     ),
   ];
 
-  if (assetOptions) {
+  if (assetConfigOptions) {
     rollupConfig.push(
       createAssetRollupConfig(
+        configContext,
         {
-          packageName: packageName,
-          outputDir: assetOptions.outputDir,
-          needTerserPlugin: needTerser,
-          needLibraryAssetsPlugin: assetOptions.needLibraryAssets,
-          entryOptions: { type: entryType, multiExclude: multiExclude },
+          outputDir: assetConfigOptions.outputDir,
+          externalAdditional: jsConfigOptions?.externalAdditional,
+          needLibraryAssetsPlugin: assetConfigOptions.needLibraryAssetsPlugin,
         },
-        assetOptions.customConfig,
+        assetConfigOptions.rollupConfig,
       ),
     );
   }

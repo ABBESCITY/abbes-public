@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { execa } from 'execa';
 
-import type { OutputResult } from '@/types';
+import type { OutputResult } from '#/types';
 
 export interface TsConfigOptions {
   path: string;
@@ -10,29 +10,23 @@ export interface TsConfigOptions {
 
 /** Load the effective tsconfig using the TypeScript CLI and require an output directory. */
 export async function loadTsConfig(configPath: string): Promise<TsConfigOptions> {
-  const resolvedConfigPath = path.resolve(configPath);
   let config: { compilerOptions?: { declarationDir?: string; outDir?: string } };
 
   try {
-    const { stdout } = await execa('pnpm', ['exec', 'tsc', '--showConfig', '--project', resolvedConfigPath], {
-      cwd: path.dirname(resolvedConfigPath),
+    const { stdout } = await execa('pnpm', ['exec', 'tsc', '--showConfig', '--project', configPath], {
+      cwd: path.dirname(configPath),
     });
     config = JSON.parse(stdout) as typeof config;
   } catch (error) {
-    throw new Error(`Failed to load TypeScript config at "${resolvedConfigPath}" with tsc --showConfig.`, {
-      cause: error,
-    });
+    throw new Error(`Failed to load TypeScript config at "${configPath}" with tsc --showConfig.`, { cause: error });
   }
 
   const outputDir = config.compilerOptions?.declarationDir ?? config.compilerOptions?.outDir;
   if (!outputDir) {
-    throw new Error(`TypeScript config at "${resolvedConfigPath}" must define "declarationDir" or "outDir".`);
+    throw new Error(`TypeScript config at "${configPath}" must define "declarationDir" or "outDir".`);
   }
 
-  return {
-    path: resolvedConfigPath,
-    outputDir: path.resolve(path.dirname(resolvedConfigPath), outputDir),
-  };
+  return { path: configPath, outputDir: path.resolve(path.dirname(configPath), outputDir) };
 }
 
 export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: string): Promise<OutputResult> {
@@ -42,12 +36,21 @@ export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: stri
   try {
     await execa(
       'pnpm',
-      ['exec', 'tsc', '--project', configPath, '--declaration', '--emitDeclarationOnly', '--outputDir', tempOutputDir],
+      [
+        'exec',
+        'tsc',
+        '--project',
+        configPath,
+        '--declaration',
+        '--emitDeclarationOnly',
+        '--declarationDir',
+        tempOutputDir,
+      ],
       { cwd: path.dirname(configPath), stdio: 'inherit' },
     );
   } catch (error) {
     throw new Error(`Failed to generate declarations from TypeScript config at "${configPath}".`, { cause: error });
   }
 
-  return { outputDir: tsOptions.outputDir, outputTemDir: tempOutputDir };
+  return { outputType: 'Declare', outputPath: tsOptions.outputDir, outputTemPath: tempOutputDir };
 }

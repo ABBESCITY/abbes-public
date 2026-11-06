@@ -1,15 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "resolvePackageJsonImports": true,
     "paths": {
-      "@/*": [
+      "#/*": [
         "./src/*"
       ]
     }
   },
   "include": [
     "src/**/*",
-    "script/**/*"
+    "script/**/*",
+    "./tsdown.config.ts"
   ],
   "exclude": [
     "dist",

@@ -1,34 +1,22 @@
-import { cp, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import { execa } from 'execa';
 
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  options: { watch: { type: 'boolean', short: 'w', default: false } },
+  strict: false,
+  allowPositionals: true,
+});
+
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const distRoot = resolve(packageRoot, 'dist');
+
+const tsdownArgs = ['exec', 'tsdown'];
+if (values.watch) {
+  tsdownArgs.push('--watch');
+}
 
 // tsdown reads the package's tsdown.config.ts and writes the executable and
 // library bundles into dist/bin and dist/lib respectively.
-await execa('pnpm', ['exec', 'tsdown'], { cwd: packageRoot, stdio: 'inherit' });
-
-await Promise.all([
-  cp(resolve(packageRoot, 'README.md'), resolve(distRoot, 'README.md')),
-  (async () => {
-    const packageJson = JSON.parse(
-      await readFile(resolve(packageRoot, 'package.json'), 'utf8'),
-    ) as Record<string, unknown>;
-
-    packageJson.bin = { 'code-infra': './bin/index.mjs' };
-    packageJson.exports = {
-      '.': {
-        types: './lib/index.d.mts',
-        import: './lib/index.mjs',
-      },
-    };
-    packageJson.types = './lib/index.d.mts';
-
-    await writeFile(
-      resolve(distRoot, 'package.json'),
-      `${JSON.stringify(packageJson, null, 2)}\n`,
-    );
-  })(),
-]);
+await execa('pnpm', tsdownArgs, { cwd: packageRoot, stdio: 'inherit' });
