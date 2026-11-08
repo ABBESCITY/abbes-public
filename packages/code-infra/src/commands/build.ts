@@ -1,16 +1,17 @@
 import path from 'node:path';
 import { findWorkspaceDir } from '@pnpm/find-workspace-dir';
 
-import { loadTsConfig, runDeclare } from '#/utils/build/typescript';
-import { copyNeedFiles } from '#/utils/build/copy';
 import { recursiveCopy } from '#/utils/other';
+import { copyNeedFiles } from '#/utils/build/copy';
+import { createBuildTempDir } from '#/utils/path';
 import { rewritePackageJson } from '#/utils/build/packageJson';
+import { loadTsConfig, runDeclare } from '#/utils/build/typescript';
 import { loadRollupConfig, runRollup } from '#/utils/build/rollup';
+
 import { ROLLUP_CONFIG_FILE, TS_BUILD_CONFIG_FILE } from '#/constants/config';
 
 import type { CommandModule } from 'yargs';
 import type { BuildContext, OutputResult } from '#/types/build';
-import { createBuildTempDir } from '#/utils/path';
 
 interface BuildArguments {
   config?: string;
@@ -29,8 +30,8 @@ export default {
       })
       .option('copy', { type: 'string', describe: 'Files to copy into the build output', array: true }),
   handler: async ({ config, copy }: BuildArguments) => {
-    const rollupConfigs = await loadRollupConfig(config || ROLLUP_CONFIG_FILE);
     const buildTempDir = await createBuildTempDir('abbes-build-temp');
+    const rollupConfigs = await loadRollupConfig(config || ROLLUP_CONFIG_FILE);
 
     const workspaceRoot = await findWorkspaceDir(process.cwd());
     if (!workspaceRoot) {
@@ -82,10 +83,10 @@ export default {
     }
 
     // Commit output
-    // Object.entries(buildResults).forEach(([packageName, results]) => {
-    //   results.forEach((result) => {
-    //     recursiveCopy(result.outputTemPath, result.outputPath);
-    //   });
-    // });
+    Object.entries(buildResults).forEach(([packageName, results]) => {
+      results.forEach((result) => {
+        recursiveCopy(result.outputTemPath, result.outputPath);
+      });
+    });
   },
 } satisfies CommandModule<{}, BuildArguments>;

@@ -10,9 +10,8 @@ import resolveCommonjs from '@rollup/plugin-commonjs';
 import esbuild from 'rollup-plugin-esbuild';
 import jsNoEmit from 'rollup-plugin-no-emit';
 
-import { BUILD_ASSETS_DIR, BUILD_DIR, BUILD_JS_DIR, TS_BUILD_CONFIG_FILE } from '#/constants/config';
-
 import { extractPackageName } from '../utils';
+import { BUILD_ASSETS_DIR, BUILD_DIR, BUILD_JS_DIR, TS_BUILD_CONFIG_FILE } from '#/constants/config';
 
 import type rollup from 'rollup';
 import type { BundleType, ConfigMeta } from '#/types/rollupConfig';
