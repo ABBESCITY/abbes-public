@@ -1,15 +1,13 @@
 import path from 'node:path';
 
 import { rollup } from 'rollup';
-import { isSubset } from 'es-toolkit/array';
 import { loadConfigFile } from 'rollup/loadConfigFile';
 
 import { findRollupMarkerPluginData } from '#/plugins/rollup/marker';
 
-import type { OutputResult, RollupConfig } from '#/types/build';
-import type { BundleType, ConfigMeta } from '#/types/rollupConfig';
+import type { BuildContext, OutputResult, RollupConfig } from '#/types/build';
+import type { ConfigMeta } from '#/types/rollupConfig';
 import type { OutputOptions, RollupBuild } from 'rollup';
-import { BUNDLE_TYPE_EXPORT_MAP } from './packageJson';
 
 /** Load and normalize a Rollup config file, using its marker plugin metadata. */
 export async function loadRollupConfig(configPath: string): Promise<Record<string, RollupConfig>> {
@@ -25,30 +23,19 @@ export async function loadRollupConfig(configPath: string): Promise<Record<strin
       }
 
       const { output, ...inputOptions } = config;
-      const { packageName, packagePath, packageJson, bundleTypes, ...restMeta } = configMeta;
+      const { packageName, packagePath, packageJson, bundleTypes, outputDir, hasAssets } = configMeta;
 
       if (!configs[packageName]) {
         configs[packageName] = {
           packageName: packageName,
           packagePath: packagePath,
           packageJson: packageJson,
-          packageBundleTypes: [],
-          packageConfig: [],
+          bundleTypes: bundleTypes,
+          outputDir: outputDir,
+          hasAssets: hasAssets,
+          packageConfig: { inputOptions, outputOptions: output },
         };
       }
-
-      configs[packageName].packageBundleTypes = isSubset(
-        configs[packageName].packageBundleTypes ?? [],
-        bundleTypes ?? [],
-      )
-        ? configs[packageName].packageBundleTypes
-        : bundleTypes;
-      configs[packageName].packageConfig.push({
-        ...restMeta,
-        inputOptions,
-        outputOptions: output ? (Array.isArray(output) ? output : [output]) : [],
-      });
-
       return configs;
     },
     {} as Record<string, RollupConfig>,
@@ -56,56 +43,50 @@ export async function loadRollupConfig(configPath: string): Promise<Record<strin
 }
 
 /** Write a Rollup bundle once for each configured output. */
-export function genOutputByBundle(
+export async function genOutputByBundle(
   bundle: RollupBuild,
   outputOptions: OutputOptions[],
   baseOutputTempDir: string,
-  outputType: 'Asset' | 'Javascript',
-): Promise<OutputResult[]> {
-  return Promise.all(
-    outputOptions.map(async (option, index) => {
-      const outputPath = option.dir as string;
-      const outputTempDir = path.resolve(baseOutputTempDir, index.toString());
-      const tempOutputOptions = { ...option, dir: outputTempDir };
-
-      await bundle.write(tempOutputOptions);
-
-      console.log(outputTempDir);
-
-      const outputResult = { outputType, outputPath, outputTemPath: outputTempDir } as OutputResult;
-
-      if (option.format && Object.keys(BUNDLE_TYPE_EXPORT_MAP).includes(option.format)) {
-        outputResult.bundleType = option.format as BundleType;
-      }
-
-      return outputResult;
+) {
+  await Promise.all(
+    outputOptions.map(async (option) => {
+      await bundle.write({ ...option, dir: baseOutputTempDir });
     }),
   );
 }
 
 /** Build Rollup configs and write their outputs under the temporary build directory. */
-export async function runRollup(
-  rollupConfig: RollupConfig,
-  buildTempDir: string,
-): Promise<{ js: OutputResult[]; assets: OutputResult[] }> {
-  const js: OutputResult[] = [];
-  const assets: OutputResult[] = [];
+export async function runRollup(rollupConfig: RollupConfig, buildCtx: BuildContext) {
+  let jsResult: OutputResult;
+  const config = rollupConfig.packageConfig;
 
-  for (const config of rollupConfig.packageConfig) {
-    const baseOutputTempDir = path.resolve(buildTempDir, config.configType);
-    const bundle = await rollup(config.inputOptions);
+  const hasAssets = rollupConfig.hasAssets;
+  const buildTempDir = buildCtx.outputTempDir;
+  const outputPathJs = path.resolve(buildCtx.baseOutputDir, rollupConfig.outputDir.js);
+  const outputPathAssets = path.resolve(buildCtx.baseOutputDir, rollupConfig.outputDir.asset);
+  const baseOutputTempDir = path.resolve(buildTempDir);
 
-    for (const plugin of config.inputOptions.plugins as any) {
-      console.log(plugin.name);
-    }
+  // Create a Rollup bundle with the input options
+  const bundle = await rollup(config.inputOptions);
 
-    try {
-      const outputResults = await genOutputByBundle(bundle, config.outputOptions, baseOutputTempDir, config.configType);
-      (config.configType === 'Asset' ? assets : js).push(...outputResults);
-    } finally {
-      await bundle.close();
-    }
+  try {
+    await genOutputByBundle(bundle, config.outputOptions, baseOutputTempDir);
+    jsResult = {
+      outputType: 'JavaScript',
+      outputPath: outputPathJs,
+      outputTempPath: path.resolve(baseOutputTempDir, rollupConfig.outputDir.js),
+    };
+  } finally {
+    await bundle.close();
   }
 
-  return { js, assets };
+  buildCtx.outputResults.push(jsResult);
+
+  if (hasAssets) {
+    buildCtx.outputResults.push({
+      outputType: 'Asset',
+      outputPath: outputPathAssets,
+      outputTempPath: path.resolve(baseOutputTempDir, rollupConfig.outputDir.asset),
+    });
+  }
 }

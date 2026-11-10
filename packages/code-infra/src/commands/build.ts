@@ -31,61 +31,53 @@ export default {
       .option('copy', { type: 'string', describe: 'Files to copy into the build output', array: true }),
   handler: async ({ config, copy }: BuildArguments) => {
     const buildTempDir = await createBuildTempDir('abbes-build-temp');
-    const rollupConfigs = await loadRollupConfig(config || ROLLUP_CONFIG_FILE);
-
     const workspaceRoot = await findWorkspaceDir(process.cwd());
     if (!workspaceRoot) {
       throw new Error('Workspace directory not found');
     }
 
+    // Load Rollup configuration for the workspace
+    const rollupConfigs = await loadRollupConfig(config || ROLLUP_CONFIG_FILE);
+
     // Output results for each package, keyed by package name
     const buildResults: Record<string, OutputResult[]> = {};
 
     for (const [packageName, rollupConfig] of Object.entries(rollupConfigs)) {
-      const workspaceDir = rollupConfig.packagePath;
-      const workspacePackageJson = rollupConfig.packageJson;
-      const tsConfigPath = path.join(workspaceDir, TS_BUILD_CONFIG_FILE);
-      const baseOutputTempDir = path.resolve(buildTempDir, packageName);
+      const { packagePath, packageJson, bundleTypes, outputDir } = rollupConfig;
 
-      // Need read config
-      const results: OutputResult[] = [];
+      const tsConfigPath = path.join(rollupConfig.packagePath, TS_BUILD_CONFIG_FILE);
+      const outputTempDir = path.resolve(buildTempDir, packageName);
+
       const buildContext: BuildContext = {
+        bundleTypes,
         workspaceRoot,
-        workspaceDir,
-        baseOutputTempDir,
-        bundleType: rollupConfig.packageBundleTypes,
+        packagePath,
+        baseOutputDir: outputDir.base,
+        outputTempDir,
+        outputResults: [],
       };
 
       // Build Javascript and Assets
-      const { js, assets } = await runRollup(rollupConfig, baseOutputTempDir);
-      buildContext.jsOutputDir = Object.fromEntries(
-        js.map((result) => [result.bundleType!, result.outputPath]),
-      ) as BuildContext['jsOutputDir'];
-      if (assets.length > 0) {
-        buildContext.assetsOutputDir = assets[0].outputPath;
-      }
-      results.push(...js, ...assets);
+      await runRollup(rollupConfig, buildContext);
 
       // Build Declare
       const tsOptions = await loadTsConfig(tsConfigPath);
-      const declareResults = await runDeclare(tsOptions, baseOutputTempDir);
-      buildContext.declareOutputDir = declareResults.outputPath;
-      results.push(declareResults);
+      await runDeclare(tsOptions, buildContext);
 
       // Rewrite Package.json
-      if (buildContext.declareOutputDir && buildContext.jsOutputDir) {
-        await rewritePackageJson(workspacePackageJson, baseOutputTempDir, buildContext);
-      }
+      await rewritePackageJson(packageJson, buildContext);
 
       // Copy need files
       await copyNeedFiles(copy ?? [], buildContext);
-      buildResults[packageName] = results;
+      buildResults[packageName] = buildContext.outputResults;
     }
 
+    console.log(buildResults);
+
     // Commit output
-    Object.entries(buildResults).forEach(([packageName, results]) => {
+    Object.entries(buildResults).forEach(([_packageName, results]) => {
       results.forEach((result) => {
-        recursiveCopy(result.outputTemPath, result.outputPath);
+        recursiveCopy(result.outputTempPath, result.outputPath);
       });
     });
   },

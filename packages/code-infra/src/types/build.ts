@@ -1,29 +1,24 @@
-import type { PackageJson } from 'type-fest';
 import type { BundleType, RollupConfigOptions } from './rollupConfig';
+import type { ConfigMeta } from './rollupConfig';
 
 export type JsOutputDir = { [key in BundleType]: string };
 
-export type RollupConfig = {
-  packageName: string;
-  packagePath: string;
-  packageJson: PackageJson;
-  packageBundleTypes: BundleType[];
-  packageConfig: Omit<RollupConfigOptions, 'packageName'>[];
-};
+export interface RollupConfig extends ConfigMeta {
+  packageConfig: Omit<RollupConfigOptions, 'packageName'>;
+}
 
 export interface OutputResult {
-  outputType: 'Assets' | 'Javascript' | 'Declare';
+  outputType: 'Asset' | 'JavaScript' | 'Declaration' | 'PackageJson' | 'Other';
   bundleType?: BundleType;
   outputPath: string;
-  outputTemPath: string;
+  outputTempPath: string;
 }
 
 export interface BuildContext {
-  bundleType: BundleType[];
+  bundleTypes: BundleType[];
   workspaceRoot: string;
-  workspaceDir: string;
-  baseOutputTempDir: string;
-  jsOutputDir?: JsOutputDir;
-  assetsOutputDir?: string;
-  declareOutputDir?: string;
+  baseOutputDir: string;
+  packagePath: string;
+  outputTempDir: string;
+  outputResults: OutputResult[];
 }

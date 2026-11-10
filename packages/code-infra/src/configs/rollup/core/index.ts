@@ -8,30 +8,34 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import resolveCommonjs from '@rollup/plugin-commonjs';
 
 import esbuild from 'rollup-plugin-esbuild';
-import jsNoEmit from 'rollup-plugin-no-emit';
+import preserveDirectives from 'rollup-plugin-preserve-directives';
 
 import { extractPackageName } from '../utils';
-import { BUILD_ASSETS_DIR, BUILD_DIR, BUILD_JS_DIR, TS_BUILD_CONFIG_FILE } from '#/constants/config';
+import { getInputByPackageJson } from '#/utils/packageJson';
+import { BUILD_ASSETS_DIR, SOURCE_DIR, TS_BUILD_CONFIG_FILE } from '#/constants/config';
 
 import type rollup from 'rollup';
-import type { BundleType, ConfigMeta } from '#/types/rollupConfig';
+import type { ConfigContext } from '#/types/rollupConfig';
+import type { PackageJson } from 'type-fest';
 
-export function createRollupInput(
-  configMeta: ConfigMeta,
-  inputPathList: Record<string, string>,
-): Record<string, string> {
-  const { packagePath } = configMeta;
+export function createRollupInput(configCtx: ConfigContext): Record<string, string> {
+  const { inputType, packageJson, packagePath } = configCtx;
 
-  return Object.fromEntries(
-    Object.entries(inputPathList).map(([key, keyPath]) => [key.slice(2) || 'index', path.join(packagePath, keyPath)]),
-  );
+  if (inputType === 'single') {
+    return { index: path.join(packagePath, SOURCE_DIR, 'index.ts') };
+  } else {
+    const inputPathList = getInputByPackageJson(packageJson as PackageJson);
+    return Object.fromEntries(
+      Object.entries(inputPathList).map(([key, keyPath]) => [key, path.join(packagePath, keyPath)]),
+    );
+  }
 }
 
 export function createRollupExternal(
-  configMeta: ConfigMeta,
+  configCtx: ConfigContext,
   options: { additional?: string[]; includeBuiltins?: boolean } = {},
 ) {
-  const { packagePath } = configMeta;
+  const { packagePath } = configCtx;
   const { additional, includeBuiltins } = options;
 
   let builtins = new Set();
@@ -57,46 +61,41 @@ export function createRollupExternal(
 }
 
 export function createRollupPlugins(
-  configMeta: ConfigMeta,
-  options: { needTerser?: boolean; hasAssets?: boolean; additional?: rollup.Plugin[] } = {},
+  configCtx: ConfigContext,
+  options: { needTerser?: boolean; additional?: rollup.Plugin[] } = {},
 ) {
-  const { packagePath } = configMeta;
-  const { needTerser, additional, hasAssets = false } = options;
+  const { packagePath } = configCtx;
+  const { needTerser, additional } = options;
 
   const basePlugins = [
     nodeResolve(),
     resolveCommonjs(),
     json(),
-    esbuild({ tsconfig: path.join(packagePath, TS_BUILD_CONFIG_FILE) }),
+    esbuild({ tsconfig: path.join(packagePath, TS_BUILD_CONFIG_FILE), sourceMap: false }),
+    preserveDirectives(),
   ];
 
   if (needTerser) basePlugins.push(terser());
-  if (hasAssets) basePlugins.push(jsNoEmit({ match: (_fileName, output) => output.type === 'chunk' }));
   if (additional) basePlugins.push(...additional);
 
   return basePlugins;
 }
 
-export function createRollupOutput(
-  configMeta: ConfigMeta,
-  options: { isAsset?: boolean; directory?: string; isSourceMap?: boolean } = {},
-) {
-  const { packagePath } = configMeta;
-  const { directory, isAsset, isSourceMap } = options;
+export function createRollupOutput(configCtx: ConfigContext, options: { isSourceMap?: boolean } = {}) {
+  const { isSourceMap } = options;
+  const { packagePath, outputDir: outputDir } = configCtx;
 
-  const bundleList: { bundleType: BundleType; bundleOutputDir: string; isAsset?: boolean }[] =
-    configMeta.bundleTypes.map((bundleType) => ({
-      bundleType,
-      bundleOutputDir: isAsset
-        ? path.join(packagePath, ...(directory ? [directory] : [BUILD_DIR, BUILD_ASSETS_DIR]))
-        : path.join(packagePath, ...(directory ? [directory] : [BUILD_DIR, BUILD_JS_DIR, bundleType])),
-    }));
-
-  return bundleList.map(({ bundleType, bundleOutputDir }) => ({
-    dir: bundleOutputDir,
+  return configCtx.bundleTypes.map((bundleType) => ({
+    dir: path.join(packagePath, outputDir.base),
     format: bundleType,
     sourcemap: isSourceMap,
     preserveModules: true,
     preserveModulesRoot: 'src',
+    entryFileNames: `${outputDir.js}/${bundleType}/[name].${bundleType === 'cjs' ? 'cjs' : 'mjs'}`,
+    assetFileNames: (assetInfo: any) => {
+      const originalFileName = assetInfo.originalFileNames?.[0];
+      const relativePath = path.relative('src', originalFileName);
+      return path.join(BUILD_ASSETS_DIR, relativePath);
+    },
   }));
 }

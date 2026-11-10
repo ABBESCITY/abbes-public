@@ -1,7 +1,9 @@
 import path from 'node:path';
 import { execa } from 'execa';
 
-import type { OutputResult } from '#/types';
+import { BUILD_DECLARE_TEMP_DIR } from '#/constants/config';
+
+import type { BuildContext } from '#/types/build';
 
 export interface TsConfigOptions {
   path: string;
@@ -29,9 +31,9 @@ export async function loadTsConfig(configPath: string): Promise<TsConfigOptions>
   return { path: configPath, outputDir: path.resolve(path.dirname(configPath), outputDir) };
 }
 
-export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: string): Promise<OutputResult> {
+export async function runDeclare(tsOptions: TsConfigOptions, buildCtx: BuildContext) {
   const configPath = path.resolve(tsOptions.path);
-  const tempOutputDir = path.resolve(outputTempDir);
+  const tempOutputDir = path.join(buildCtx.outputTempDir, BUILD_DECLARE_TEMP_DIR);
 
   try {
     await execa(
@@ -45,6 +47,8 @@ export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: stri
         '--emitDeclarationOnly',
         '--declarationDir',
         tempOutputDir,
+        '--sourceMap',
+        'false',
       ],
       { cwd: path.dirname(configPath), stdio: 'inherit' },
     );
@@ -52,5 +56,9 @@ export async function runDeclare(tsOptions: TsConfigOptions, outputTempDir: stri
     throw new Error(`Failed to generate declarations from TypeScript config at "${configPath}".`, { cause: error });
   }
 
-  return { outputType: 'Declare', outputPath: tsOptions.outputDir, outputTemPath: tempOutputDir };
+  buildCtx.outputResults.push({
+    outputType: 'Declaration',
+    outputPath: tsOptions.outputDir,
+    outputTempPath: tempOutputDir,
+  });
 }

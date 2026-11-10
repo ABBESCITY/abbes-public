@@ -66,10 +66,10 @@ async function normalizePatterns(globs: string[], cwd: string): Promise<{ patter
  * (such as a missing `CHANGELOG.md`) are simply ignored.
  */
 export async function copyNeedFiles(glob: string[] = [], ctx: BuildContext): Promise<void> {
-  const { patterns, ignore } = await normalizePatterns([...DEFAULT_NEED_COPY_FILES, ...glob], ctx.workspaceDir);
+  const { patterns, ignore } = await normalizePatterns([...DEFAULT_NEED_COPY_FILES, ...glob], ctx.packagePath);
 
   const files = await fg(patterns, {
-    cwd: ctx.workspaceDir,
+    cwd: ctx.packagePath,
     ignore,
     dot: true,
     onlyFiles: true,
@@ -80,13 +80,18 @@ export async function copyNeedFiles(glob: string[] = [], ctx: BuildContext): Pro
   await forEachAsync(
     files,
     async (file) => {
-      const sourcePath = path.resolve(ctx.workspaceDir, file);
-      const targetPath = path.resolve(ctx.baseOutputTempDir, file);
+      const sourcePath = path.resolve(ctx.packagePath, file);
+      const targetPath = path.resolve(ctx.outputTempDir, file);
 
       if (sourcePath === targetPath) return;
 
       await fs.promises.mkdir(path.dirname(targetPath), { recursive: true });
       await recursiveCopy(sourcePath, targetPath);
+      ctx.outputResults.push({
+        outputType: 'Other',
+        outputPath: path.resolve(ctx.packagePath, ctx.baseOutputDir, file),
+        outputTempPath: targetPath,
+      });
     },
     { concurrency: MAX_COPY_CONCURRENCY },
   );

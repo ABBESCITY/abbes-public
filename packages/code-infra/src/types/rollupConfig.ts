@@ -6,12 +6,7 @@ import type { PackageJson } from 'type-fest';
 export type BundleType = 'esm' | 'cjs';
 
 // Rollup Options
-export type RollupConfigOptions = {
-  packageName: string;
-  configType: 'Asset' | 'Javascript';
-  inputOptions: InputOptions;
-  outputOptions: OutputOptions[];
-};
+export type RollupConfigOptions = { packageName: string; inputOptions: InputOptions; outputOptions: OutputOptions[] };
 
 // Create Config Options
 export interface ConfigMeta {
@@ -19,15 +14,11 @@ export interface ConfigMeta {
   packagePath: string;
   packageJson: PackageJson;
   bundleTypes: BundleType[];
-  configType: 'Asset' | 'Javascript';
+  outputDir: { base: string; asset: string; js: string };
+  hasAssets: boolean;
 }
-export interface ConfigContext extends Omit<ConfigMeta, 'configType'> {
-  inputList: Record<string, string>;
+export interface ConfigContext extends ConfigMeta {
+  inputType: 'single' | 'multiple';
   needSourceMap?: boolean;
   needTerserPlugin?: boolean;
-}
-
-export interface CreateRollupConfigOption {
-  outputDir?: string;
-  externalAdditional?: string[];
 }

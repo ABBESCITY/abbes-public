@@ -5,36 +5,34 @@ import { createRollupExternal, createRollupInput, createRollupOutput, createRoll
 import { merge } from '#/utils/merge';
 import { createRollupMarkerPlugin } from '#/plugins/rollup/marker';
 
-import type { ConfigContext, ConfigMeta, CreateRollupConfigOption } from '#/types/rollupConfig';
+import type { ConfigContext, ConfigMeta } from '#/types/rollupConfig';
 
 export function createBaseRollupConfig(
   configCtx: ConfigContext,
-  options: CreateRollupConfigOption,
+  externalAdditional?: string[],
   customConfig?: rollup.RollupOptions,
 ): rollup.RollupOptions {
-  const { outputDir, externalAdditional } = options;
-  const { inputList, bundleTypes, packageName, packagePath, packageJson, needSourceMap, needTerserPlugin } = configCtx;
-
-  const configMeta: ConfigMeta = {
-    packageName,
-    packagePath,
-    packageJson,
-    bundleTypes: bundleTypes,
-    configType: 'Javascript',
-  };
+  const { bundleTypes, packageName, packagePath, packageJson, needSourceMap, needTerserPlugin, outputDir, hasAssets } =
+    configCtx;
 
   const defaultConfig = {
-    input: createRollupInput(configMeta, inputList),
-    output: createRollupOutput(configMeta, { directory: outputDir, isSourceMap: needSourceMap }),
-    plugins: createRollupPlugins(configMeta, {
+    input: createRollupInput(configCtx),
+    output: createRollupOutput(configCtx, { isSourceMap: needSourceMap }),
+    plugins: createRollupPlugins(configCtx, {
       needTerser: needTerserPlugin,
-      hasAssets: false,
-      additional: [createRollupMarkerPlugin(configMeta)],
+      additional: [
+        createRollupMarkerPlugin({
+          packageName,
+          packagePath,
+          packageJson,
+          bundleTypes,
+          hasAssets,
+          outputDir,
+        } as ConfigMeta),
+      ],
     }),
-    external: createRollupExternal(configMeta, { additional: externalAdditional }),
+    external: createRollupExternal(configCtx, { additional: externalAdditional }),
   };
-
   if (customConfig) return merge(customConfig, defaultConfig);
-
   return defaultConfig;
 }
