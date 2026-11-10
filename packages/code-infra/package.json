@@ -4,14 +4,21 @@
   "description": "The code infra for tool package develop",
   "type": "module",
   "bin": {
-    "code-infra": "./src/bin.ts"
+    "code-infra": "src/bin.ts"
+  },
+  "imports": {
+    "#/*": "./src/*"
   },
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "prebuild": "node ./script/prebuild.ts",
-    "build": "node ./script/build.ts"
+    "build": "node ./script/build.ts",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "rollup": "^4.0.0"
   },
   "dependencies": {
     "@eslint-react/eslint-plugin": "5.27.3",
@@ -20,10 +27,13 @@
     "@eslint/json": "2.1.1",
     "@eslint/markdown": "8.0.3",
     "@next/eslint-plugin-next": "16.4.0",
+    "@pnpm/workspace.find-packages": "1000.0.65",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vitest/eslint-plugin": "1.6.27",
     "chalk": "5.6.2",
     "cli-spinners": "3.4.0",
     "defu": "6.1.7",
+    "esbuild": "0.28.2",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-compat": "7.0.2",
     "eslint-plugin-import": "2.32.0",
@@ -39,6 +49,7 @@
     "rollup": "4.63.1",
     "stylelint-config-standard": "40.0.0",
     "stylelint-config-standard-scss": "17.0.0",
+    "typescript": "catalog:",
     "typescript-eslint": "8.71.1",
     "yargs": "18.0.0",
     "yocto-spinner": "1.2.0"
@@ -52,21 +63,21 @@
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@rollup/plugin-terser": "1.0.0",
+    "@rollup/plugin-typescript": "12.3.1",
     "@types/eslint-plugin-jsx-a11y": "6.10.1",
     "@types/node": "catalog:",
     "@types/yargs": "catalog:",
+    "es-toolkit": "1.53.1",
     "execa": "10.0.1",
     "json5": "2.2.3",
-    "pkg-dir": "9.0.0",
     "prettier": "3.9.10",
     "rollup-merge-config": "0.0.12",
     "rollup-plugin-esbuild": "6.2.1",
     "rollup-plugin-library-assets": "0.1.1",
-    "rollup-plugin-no-emit": "1.3.0",
+    "rollup-plugin-preserve-directives": "0.4.0",
     "rollup-plugin-styles": "4.0.0",
     "stylelint": "17.16.0",
     "tsdown": "0.23.1",
-    "type-fest": "5.9.0",
-    "typescript": "catalog:"
+    "type-fest": "5.9.0"
   }
 }

@@ -22,7 +22,7 @@ function mergeHandler({ arrayCustomizer, objectCustomizer }: MergeOption = {}) {
     const isDefaultObject = isPlainObject(defaultValue);
 
     if (isDefaultArray && isValueArray) {
-      const defaultResult = [...value, ...defaultValue];
+      const defaultResult = [...defaultValue, ...value];
       const result = arrayCustomizer ? arrayCustomizer(value, defaultValue, key, namespace) : defaultResult;
       obj[key] = result ?? defaultResult;
       return true;

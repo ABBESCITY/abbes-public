@@ -1,6 +1,8 @@
 // Utils
 export * from './utils/other';
 export * from './utils/path';
+export * from './utils/build/rollup';
+export * from './utils/build/typescript';
 export * from './configs/rollup/utils';
 
 // Configs

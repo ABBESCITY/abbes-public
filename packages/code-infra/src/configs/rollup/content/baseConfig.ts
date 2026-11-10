@@ -2,33 +2,37 @@ import rollup from 'rollup';
 
 import { createRollupExternal, createRollupInput, createRollupOutput, createRollupPlugins } from '../core';
 
-import { merge } from '@/utils/merge';
-import { getPackageRelativePath } from '@/utils/path';
+import { merge } from '#/utils/merge';
+import { createRollupMarkerPlugin } from '#/plugins/rollup/marker';
 
-import type { CreateRollupConfigOption } from '@/types/cusRollupConfig';
+import type { ConfigContext, ConfigMeta } from '#/types/rollupConfig';
 
 export function createBaseRollupConfig(
-  options: CreateRollupConfigOption,
+  configCtx: ConfigContext,
+  externalAdditional?: string[],
   customConfig?: rollup.RollupOptions,
 ): rollup.RollupOptions {
-  const { packageName, outputDir, needTerserPlugin, externalAdditional, entryOptions } = options;
-
-  const packagePath = getPackageRelativePath(packageName);
+  const { bundleTypes, packageName, packagePath, packageJson, needSourceMap, needTerserPlugin, outputDir, hasAssets } =
+    configCtx;
 
   const defaultConfig = {
-    packageName: packageName,
-    outputType: 'Javascript',
-    input: createRollupInput({
-      packagePath: packagePath,
-      entryType: entryOptions?.type,
-      multiExclude: entryOptions?.multiExclude,
+    input: createRollupInput(configCtx),
+    output: createRollupOutput(configCtx, { isSourceMap: needSourceMap }),
+    plugins: createRollupPlugins(configCtx, {
+      needTerser: needTerserPlugin,
+      additional: [
+        createRollupMarkerPlugin({
+          packageName,
+          packagePath,
+          packageJson,
+          bundleTypes,
+          hasAssets,
+          outputDir,
+        } as ConfigMeta),
+      ],
     }),
-    output: createRollupOutput({ packagePath: packagePath, directory: outputDir }),
-    plugins: createRollupPlugins({ needTerser: needTerserPlugin ?? false, hasAssets: false }),
-    external: createRollupExternal({ packagePath: packagePath, additional: externalAdditional }),
+    external: createRollupExternal(configCtx, { additional: externalAdditional }),
   };
-
   if (customConfig) return merge(customConfig, defaultConfig);
-
   return defaultConfig;
 }

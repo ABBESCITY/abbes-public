@@ -3,7 +3,7 @@ import { defineConfig } from '@eslint/config-helpers';
 import vitestPlugin from '@vitest/eslint-plugin';
 
 import testingLibrary from 'eslint-plugin-testing-library';
-import { EXTENSION_SPEC_TEST_FILE } from '../../../constants/extension';
+import { EXTENSION_SPEC_TEST } from '../../../constants/extension';
 
 export function createTestEslintConfig({ useReactFrame = true }: { useReactFrame: boolean }) {
   return defineConfig([
@@ -19,7 +19,7 @@ export function createSpecEslintConfig({ baseDirectory }: { baseDirectory?: stri
   return defineConfig([
     {
       name: 'Spec Test Config',
-      files: [`${relativePath}**/${EXTENSION_SPEC_TEST_FILE}`],
+      files: [`${relativePath}**/${EXTENSION_SPEC_TEST}`],
       rules: {
         'no-alert': 'off',
         'no-console': 'off',
